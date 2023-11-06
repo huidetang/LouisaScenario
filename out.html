@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>ぜんぶ、雪のせいだ</title>
+<meta name="viewport" content="width=device-width">
+<style type="text/css">
+/* 標準的な要素のスタイルの上書き */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;  /* 強調をなくす */
+  touch-action: manipulation;  /* ダブルタップでズームさせない */
+}
+
+body {
+  overscroll-behavior: none;  /* ドラッグでリロードさせない */
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, Arial, Helvetica;
+  -webkit-text-size-adjust: 100%;  /* Safari 回転対策 */
+}
+
+button, select, input {
+  border: 1px solid #555;
+  border-radius: 5px;
+}
+
+button:active, a:active, img:active, li:active {
+  opacity: 0.5;
+}
+
+/* 動的に付与するスタイル */
+
+.scroll-disabled {
+  position: fixed;
+}
+
+/* アプリ固有の要素のスタイル */
+
+.app-header {
+  width: 100%;
+  height: 48px;
+  background: #EEB63D;
+  position: fixed;
+  text-align: center;
+  z-index: 1;
+}
+
+.app-header-search {
+  background: #eaf2ff;
+  visibility: hidden;
+}
+
+.header-title {
+  color: #FFF;
+  font-size: 24px;
+  line-height: 24px;
+  margin: 14px 52px 10px 52px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-button {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.header-button-left {
+  position: fixed;
+  top: 10px;
+  left: 16px;
+}
+
+.header-button-right {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+}
+
+.header-search-box {
+  display: flex;
+  font-size: 20px;
+  line-height: 24px;
+  margin: 14px 52px 10px 52px;
+}
+
+.header-search-word {
+  display: inline-block;
+  flex: 1 1 auto;
+  height: 26px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-search-nav {
+  display: inline-block;
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+.header-search-nav button {
+  width: 36px;
+  height: 26px;
+  font-size: 16px;
+  vertical-align: bottom;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  z-index: 2;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  opacity: 0.25;
+}
+
+.panel {
+  font-size: 20px;
+  padding: 16px;
+}
+
+.panel-header {
+  margin: 8px auto 8px;
+}
+
+.panel-header h2 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.panel-header-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.panel div {
+  margin: 8px auto 24px;
+}
+
+.panel p {
+  margin: 8px auto 8px;
+}
+
+.panel select {
+  height: 30px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.panel button {
+  height: 30px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.panel input {
+  height: 30px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.app-toc {
+  background: white;
+  position: fixed;
+  overflow: auto;
+  top: 48px;
+  bottom: 0;
+  left: 0;
+  min-width: 150px;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0px;
+  padding: 0;
+}
+
+.toc-list li {
+  color: darkcyan;
+  white-space: nowrap;
+  margin: 16px;
+  cursor: pointer;
+}
+
+.toc-list li.current {
+  font-weight: bold;
+}
+
+.app-setting {
+  background: white;
+  position: fixed;
+  overflow: auto;
+  top: 48px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+p.setting-item {
+  margin-top: 16px ;
+  color: darkcyan;
+}
+
+p#updateAlert {
+  color: red;
+}
+main {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding-top: 2px;
+  padding-left: 18px;
+  padding-right: 12px;
+  padding-bottom: 12px;
+}
+
+main.vertical {
+  writing-mode: vertical-rl;
+  -webkit-writing-mode: vertical-rl;
+  padding-top: 18px;
+  padding-left: 12px;
+  padding-right: 2px;
+}
+
+main.upright {
+  text-orientation: upright;
+}
+
+main div p {
+  margin: 0.4em auto 0.4em;
+}
+
+main.vertical div p {
+  margin: auto 0.4em auto;
+}
+
+.title p {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.author p {
+  font-size: 0.9em;
+  text-align: right;
+}
+
+.chars-headline p {
+  font-weight: bold;
+}
+
+.character p:first-child {
+  margin-left: 1em;
+  margin-bottom: 0.1em;
+}
+
+main.vertical .character p:first-child {
+  margin-top: 1em;
+  margin-left: 0.1em;
+  margin-bottom: auto;
+}
+
+.character p:nth-child(2) {
+  font-size: 0.9em;
+  margin-left: 3em;
+  margin-top: 0.1em;
+}
+
+main.vertical .character p:nth-child(2) {
+  margin-left: auto;
+  margin-top: 3em;
+  margin-right: 0.1em;
+}
+
+.headline-1 p {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 1em auto 1em;
+}
+
+main.vertical .headline-1 p {
+  margin: auto 1em auto;
+}
+
+.headline-2 p {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 1em auto 1em;
+}
+
+main.vertical .headline-2 p {
+  margin: auto 1em auto;
+}
+
+.headline-3 p {
+  font-weight: bold;
+  margin: 1em auto 1em;
+}
+
+main.vertical .headline-3 p {
+  margin: auto 1em auto;
+}
+
+.direction p {
+  margin: 1em auto 1em 3.5em;
+}
+
+main.vertical .direction p {
+  margin: 3.5em 1em auto 1em;
+}
+
+.dialogue p:first-child {
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-bottom: 0.1em;
+}
+
+main.vertical .dialogue p:first-child {
+  margin-left: 0.1em;
+  margin-bottom: auto;
+}
+
+.dialogue p:nth-child(2) {
+  margin-left: 1em;
+  margin-top: 0.1em;
+}
+
+main.vertical .dialogue p:nth-child(2) {
+  margin-left: auto;
+  margin-top: 1em;
+  margin-right: 0.1em;
+}
+
+.endmark p {
+  font-size: 0.9em;
+  text-align: right;
+}
+
+span.matched {
+  background: #ee8;
+}
+
+span.matched.current {
+  background: #ec8
+}
+</style>
+</head>
+<body>
+
+<!-- ヘッダ ------------------------------------------------------------------>
+<header id="normalHeader" class="app-header">
+  <img id="tocButton" class="header-button header-button-left" src="https://satamame.github.io/pscv/img/list.png" />
+  <h1 id="headerTitle" class="header-title">ぜんぶ、雪のせいだ</h1>
+  <img id="settingButton" class="header-button header-button-right" src="https://satamame.github.io/pscv/img/gear.png" />
+</header>
+
+<!-- 台本コンテンツ ---------------------------------------------------------->
+<main id="main">
+<div class="title">
+  <p>ぜんぶ、雪のせいだ</p>
+</div>
+<div class="author">
+  <p>るいざ・しゃーろっと</p>
+</div>
+<div class="chars-headline">
+  <p>登場人物</p>
+</div>
+<div class="character">
+  <p>ユイちゃん</p>
+</div>
+<div class="character">
+  <p>レイさん</p>
+</div>
+<div class="headline-1">
+  <p>シーン1</p>
+</div>
+<div class="direction">
+  <p>ぶいちゃのとあるワールド。</p>
+</div>
+<div class="dialogue">
+  <p>レイさん</p>
+  <p>じゃあ、今日はお休み！</p>
+</div>
+<div class="dialogue">
+  <p>ユイちゃん</p>
+  <p>おやすみなさいっ。</p>
+</div>
+<div class="endmark">
+  <p>終わり</p>
+</div>
+</main>
+
+<!-- 目次パネル -------------------------------------------------------------->
+<nav id="toc" class="modal">
+  <div class="overlay"></div>
+  <div class="app-toc panel">
+    <div class="panel-header">
+      <h2>目次</h2>
+      <img id="tocCloseButton" class="panel-header-button" src="https://satamame.github.io/pscv/img/close.png" />
+    </div>
+    <ul id="tocList" class="toc-list">
+    </ul>
+  </div>
+</nav>
+
+<!-- 設定パネル -------------------------------------------------------------->
+<div id="setting" class="modal">
+  <div class="overlay"></div>
+  <div class="app-setting panel">
+    <div class="panel-header">
+      <h2>設定</h2>
+      <img id="settingCloseButton" class="panel-header-button" src="https://satamame.github.io/pscv/img/close.png" />
+    </div>
+    <p class="setting-item">文字サイズ</p>
+    <div>
+      <select id="fontSizeSelect">
+      </select>
+    </div>
+    <p class="setting-item">向き</p>
+    <div>
+      <select id="writingModeSelect">
+        <option value='0'>横書き</option>
+        <option value='1'>縦書き</option>
+        <option value='2'>縦書き (英数字も)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+const appVersion = '0.0.1';
+const debug = true;
+
+// グローバル変数の定義
+let tocItems = [];                  // 見出し要素のインデックスリスト
+let tocItemIndex = 0;               // 目次で現在地としている見出しインデックス
+let scrollLocked = false;           // スクロールをロックしているかのフラグ
+let trackingLineIndex = 0;
+let viewTopTrackingId = null;
+let lastFontSize = 4;
+let lastWritingMode = 0;
+
+const fontSizeInPixel = {
+  1: '12px',
+  2: '14px',
+  3: '16px',
+  4: '18px',
+  5: '20px',
+  6: '22px',
+  7: '24px'
+};
+
+let fontSize = 4;           // 1-7
+let writingMode = 0;        // 0: 横, 1: 縦, 2: 縦 (英数字も)
+
+window.onload = (event) => {
+  // tocItems を初期化する (browseronly 版のみ)
+  const main = document.getElementById('main');
+  const tocList = document.getElementById('tocList')
+  for (let i = 0; i < main.children.length; i++) {
+    // 見出しなら目次に追加する
+    const elm = main.children[i];
+    if (
+      elm.classList.contains('title')
+      || elm.classList.contains('chars-headline')
+      || elm.classList.contains('headline-1')
+      || elm.classList.contains('headline-2')
+      || elm.classList.contains('headline-3')
+    ) {
+      const tocItem = document.createElement('li');
+      tocItem.innerHTML = elm.textContent;
+      tocItem.setAttribute('onclick', `jumpToTocItem(${tocItems.length});`);
+      tocList.appendChild(tocItem);
+
+      // 目次項目リストにも番号を追加する
+      tocItems.push(i);
+    }
+  }
+
+  // 文字サイズ選択メニューを初期化する
+  initFontSizeMenu();
+
+  // 横書き/縦書きを初期化する
+  initWritingMode();
+
+  // イベントハンドラを初期化する
+  initEventHandlers();
+};
+
+// 画面回転時の処理
+function orientationChanged() {
+  // スクロールロック
+  const lastScrollLocked = scrollLocked;
+  if (!scrollLocked)
+    lockScroll();
+
+  let delay = 100;
+  setTimeout(() => {
+    // スクロール位置を調整してスクロールをアンロック
+    jumpToLine(trackingLineIndex);
+    if (!lastScrollLocked) {
+      unlockScroll();
+      // ずれがあった時のために台本行の追跡をする
+      startTrackingViewTop();
+    }
+  }, delay);
+}
+
+// 文字サイズ選択メニューを初期化する関数
+function initFontSizeMenu() {
+  // 文字サイズ選択メニューを初期化する
+  const fontSizeSelect = document.getElementById('fontSizeSelect');
+  while (fontSizeSelect.lastChild) {
+    fontSizeSelect.removeChild(fontSizeSelect.lastChild);
+  }
+  for (const key in fontSizeInPixel) {
+    const op = document.createElement("option");
+    op.value = key;
+    op.text = key;
+    fontSizeSelect.appendChild(op);
+    if (op.value == fontSize) {
+      op.selected = true;
+    }
+  }
+
+  // グローバル変数, HTML に反映させる
+  changeFontSize();
+}
+
+// 文字サイズ選択メニューの値で文字サイズを反映させる関数
+function changeFontSize() {
+  // グローバル変数を更新
+  const fontSizeSelect = document.getElementById('fontSizeSelect');
+  fontSize = parseInt(fontSizeSelect.value);
+
+  // HTML に反映させる
+  const main = document.getElementById('main');
+  main.style.fontSize = fontSizeInPixel[fontSize];
+}
+
+// 横書き/縦書きを初期化する関数
+function initWritingMode() {
+  // 向きメニューを更新する
+  const writingModeSelect = document.getElementById('writingModeSelect');
+  for (const option of writingModeSelect.options) {
+    option.selected = (parseInt(option.value) == writingMode);
+  }
+
+  // HTML に反映させる
+  applyWritingMode();
+}
+
+// 向きメニューの値で横書き/縦書きを反映させる関数
+function changeWritingMode() {
+  // グローバル変数を更新
+  const writingModeSelect = document.getElementById('writingModeSelect');
+  writingMode = parseInt(writingModeSelect.value);
+
+  // HTML に反映させる
+  applyWritingMode();
+}
+
+// 横書き/縦書きを HTML に反映させる関数
+function applyWritingMode() {
+  const main = document.getElementById('main');
+  if (writingMode > 0) {
+    main.classList.add('vertical');
+    if (writingMode > 1)
+      main.classList.add('upright');
+    else
+      main.classList.remove('upright');
+  } else {
+    main.classList.remove('vertical');
+    main.classList.remove('upright');
+  }
+}
+
+// 台本のスクロールをロックする関数
+function lockScroll() {
+  scrollLocked = true;
+  // 台本行の追跡中なら中断する
+  if (viewTopTrackingId != null)
+    window.clearInterval(viewTopTrackingId);
+  const main = document.getElementById('main');
+  main.classList.add('scroll-disabled');
+}
+
+// 台本のスクロールロックを解除する関数
+function unlockScroll() {
+  const main = document.getElementById('main');
+  main.classList.remove('scroll-disabled');
+  scrollLocked = false;
+}
+
+// 目次を表示する関数
+function showToc() {
+  lockScroll();
+  document.getElementById("toc").style.visibility = "visible";
+  showUpCurrentTocItem();
+}
+
+// 現在地の目次項目を目立たせる関数
+function showUpCurrentTocItem() {
+  // 強調解除
+  const tocList = document.getElementById('tocList');
+  tocList.children[tocItemIndex].classList.remove('current');
+
+  // 現在地を検出
+  tocItemIndex = detectTocItemIndex();
+
+  // 現在地の目次項目を強調する
+  const currentItem = tocList.children[tocItemIndex];
+  currentItem.classList.add('current');
+  currentItem.scrollIntoView({block: 'center'});
+}
+
+// 目次を閉じる関数
+function hideToc() {
+  document.getElementById("toc").style.visibility = "hidden";
+  unlockScroll();
+}
+
+// 設定を表示する関数
+function showSetting() {
+  lockScroll();
+  lastFontSize = fontSize;        // フォントサイズを憶えておく
+  lastWritingMode = writingMode;  // 横書き/縦書き を憶えておく
+  document.getElementById("setting").style.visibility = "visible";
+}
+
+// 設定を閉じる関数
+function hideSetting() {
+  document.getElementById("setting").style.visibility = "hidden";
+  // 台本やフォントサイズや 横書き/縦書き が変わったならスクロールを調整
+  if (fontSize != lastFontSize || writingMode != lastWritingMode) {
+    jumpToLine(trackingLineIndex);
+    if (debug) console.log('*** Scroll restored.');
+    unlockScroll();
+    // ずれがあった時のために台本行の追跡をする
+    startTrackingViewTop();
+  } else {
+    unlockScroll();
+  }
+}
+// イベントハンドラを初期化する関数
+function initEventHandlers() {
+  // 画面回転時の処理を設定
+  window.addEventListener("orientationchange", () => {
+    orientationChanged();
+  });
+
+  // main にスクロールハンドラを設定
+  document.getElementById('main').addEventListener("scroll", (e) => {
+    // スクロールロック中は台本行の追跡を開始しない
+    if (!scrollLocked && viewTopTrackingId == null)
+      startTrackingViewTop();
+  });
+
+  // 目次ボタンにクリックハンドラを設定
+  document.getElementById("tocButton").addEventListener("click", (e) => {
+    showToc();
+  });
+
+  // 目次パネルのオーバーレイにクリックハンドラを設定
+  const toc = document.getElementById("toc");
+  const tocOverlay = toc.getElementsByClassName("overlay")[0];
+  tocOverlay.addEventListener("click", (e) => {
+    hideToc();
+  });
+
+  // 目次パネルの閉じるボタンにクリックハンドラを設定
+  document.getElementById("tocCloseButton").addEventListener("click", (e) => {
+    hideToc();
+  });
+
+  // 設定ボタンにクリックハンドラを設定
+  document.getElementById("settingButton").addEventListener("click", (e) => {
+    showSetting();
+  });
+
+  // 設定パネルのオーバーレイにクリックハンドラを設定
+  const setting = document.getElementById("setting");
+  const settingOverlay = setting.getElementsByClassName("overlay")[0];
+  settingOverlay.addEventListener("click", (e) => {
+    hideSetting();
+  });
+
+  // 設定パネルの閉じるボタンにクリックハンドラを設定
+  document.getElementById("settingCloseButton").addEventListener("click", (e) => {
+    hideSetting();
+  });
+
+  // 文字サイズ選択メニューに選択ハンドラを設定
+  document.getElementById('fontSizeSelect').addEventListener("change", (e) => {
+    changeFontSize();
+  });
+
+  // 向きメニューに選択ハンドラを設定
+  document.getElementById('writingModeSelect').addEventListener("change", (e) => {
+    changeWritingMode();
+  });
+}
+// 行番号を指定してジャンプする関数
+function jumpToLine(lineNum) {
+  let x = 0;
+  let y = 0;
+
+  if (lineNum > 0) {
+    // スクロール先の要素を決める
+    const main = document.getElementById('main');
+    let lineElm = main.children[lineNum];
+
+    // 子要素 (p とか) があれば、そっちを使う
+    if (lineElm.childElementCount > 0) {
+      lineElm = lineElm.children[0]
+    }
+
+    // スクロール先の座標を求める
+    if (writingMode < 1) {
+      // 横書きの場合
+      const marginTop = window.getComputedStyle(lineElm).getPropertyValue('margin-top');
+      y = lineElm.offsetTop - parseFloat(marginTop);
+      if (debug) console.log(`*** y: ${y}`);
+    } else {
+      // 縦書きの場合
+      const marginRight = window.getComputedStyle(lineElm).getPropertyValue('margin-right');
+      const viewWidth = document.getElementById('main').offsetWidth;
+      x = lineElm.offsetLeft + lineElm.offsetWidth + parseFloat(marginRight) - viewWidth;
+    }
+  }
+  main.scrollTo(x, y);
+}
+
+// インデックスを指定して目次項目にジャンプする関数
+function jumpToTocItem(i) {
+  hideToc();
+
+  // 台本行の追跡を中断し、現在地を更新する
+  if (viewTopTrackingId != null)
+    window.clearInterval(viewTopTrackingId);
+  lineNum = tocItems[i];
+  trackingLineIndex = lineNum;
+
+  // その行へジャンプする
+  jumpToLine(lineNum);
+}
+
+// 現在地の目次項目が何番目かを返す関数
+function detectTocItemIndex() {
+  if (writingMode < 1)
+    return detectTocItemIndexH();
+  else
+    return detectTocItemIndexV();
+}
+
+// 現在地の目次項目が何番目かを返す関数 (横書きの場合)
+function detectTocItemIndexH() {
+  const main = document.getElementById('main');
+  const scrollTop = main.scrollTop;
+
+  // 下まで走査した時の初期値を、最後の目次項目にする
+  let tocItemIndex = tocItems.length -1;
+
+  // 画面の上端以下にある目次項目を探す
+  for (let i = 0; i < tocItems.length; i++) {
+    const lineNum = tocItems[i];
+    const lineElm = main.children[lineNum];
+
+    if (lineElm.offsetTop - scrollTop >= 0) {
+      tocItemIndex = i;
+      break;
+    }
+  }
+
+  // 見つかった目次項目の行番号
+  const lineNum = tocItems[tocItemIndex];
+
+  if (lineNum > 0) {
+    // 見つかった目次項目の、ひとつ上の台本行要素
+    const prevElm = main.children[lineNum - 1];
+    const prevElmTop = prevElm.offsetTop - scrollTop;
+
+    // ひとつ上の要素が画面内に収まっていたら、ひとつ前の目次要素にする
+    if (prevElmTop >= 0)
+      tocItemIndex -= 1;
+  }
+
+  return tocItemIndex;
+}
+
+// 現在地の目次項目が何番目かを返す関数 (縦書きの場合)
+function detectTocItemIndexV() {
+  const main = document.getElementById('main');
+  const scrollRight = main.scrollLeft + main.offsetWidth;
+
+  // 目次項目が見つからなかった場合の値を、最後の目次項目にする
+  let tocItemIndex = tocItems.length -1;
+
+  // 画面の右端またはそれより左にある目次項目を探す
+  for (let i = 0; i < tocItems.length; i++) {
+    const lineNum = tocItems[i];
+    const lineElm = main.children[lineNum];
+
+    if (lineElm.offsetLeft + lineElm.offsetWidth - scrollRight <= 0) {
+      tocItemIndex = i;
+      break;
+    }
+  }
+
+  // 見つかった目次項目の行番号
+  const lineNum = tocItems[tocItemIndex];
+
+  if (lineNum > 0) {
+    // 見つかった目次項目の、ひとつ右の台本行要素
+    const prevElm = main.children[lineNum - 1];
+    const prevElmRight = prevElm.offsetLeft + prevElm.offsetWidth - scrollRight;
+
+    // ひとつ右の要素が画面内に収まっていたら、ひとつ前の目次要素にする
+    if (prevElmRight <= 0)
+      tocItemIndex -= 1;
+  }
+
+  return tocItemIndex;
+}
+
+// 画面上端 (または右端) にある台本行の追跡を開始する
+function startTrackingViewTop() {
+  if (debug) console.log('*** startTrackingViewTop called.');
+
+  // 追跡中なら現在の追跡を中断する
+  if (viewTopTrackingId != null)
+    window.clearInterval(viewTopTrackingId);
+
+  // writingMode に応じて追跡用の関数を呼び続ける
+  if (writingMode < 1)
+    viewTopTrackingId = window.setInterval(trackViewTopH, 10);
+  else
+    viewTopTrackingId = window.setInterval(trackViewTopV, 10);
+}
+
+// 画面の上端にある台本行を追跡する (横書きの場合)
+function trackViewTopH() {
+  const main = document.getElementById('main');
+  const curElm = main.children[trackingLineIndex];
+
+  // 注目している台本行の上端が画面上端より上にあるなら、ひとつ下を注目する
+  if (trackingLineIndex < main.childElementCount - 1) {
+    if (curElm.offsetTop < main.scrollTop) {
+      trackingLineIndex++;
+      return;
+    }
+  }
+  // 注目している台本行のひとつ前の台本行の上端が画面上端以下にあるなら、それを注目する
+  if (trackingLineIndex > 0) {
+    if (main.children[trackingLineIndex -1].offsetTop >= main.scrollTop) {
+      trackingLineIndex--;
+      return;
+    }
+  }
+  // 注目している台本行が画面上端に位置しているので追跡を中断する
+  window.clearInterval(viewTopTrackingId);
+  viewTopTrackingId = null;
+  if (debug) console.log(`*** trackingLineIndex: ${trackingLineIndex}`);
+}
+
+// 画面の右端にある台本行を追跡する (縦書きの場合)
+function trackViewTopV() {
+  const main = document.getElementById('main');
+  const curElm = main.children[trackingLineIndex];
+
+  // 注目している台本行の右端が画面上右端より右にあるなら、ひとつ左を注目する
+  if (trackingLineIndex < main.childElementCount - 1) {
+    if (curElm.offsetLeft + curElm.offsetWidth > main.scrollLeft + main.offsetWidth) {
+      trackingLineIndex++;
+      return;
+    }
+  }
+  // 注目している台本行のひとつ前の台本行の右端が画面右端またはそれより左にあるなら、それを注目する
+  if (trackingLineIndex > 0) {
+    const prevElm = main.children[trackingLineIndex - 1];
+    if (prevElm.offsetLeft + prevElm.offsetWidth <= main.scrollLeft + main.offsetWidth) {
+      trackingLineIndex--;
+      return;
+    }
+  }
+  // 注目している台本行が画面右端に位置しているので追跡を中断する
+  window.clearInterval(viewTopTrackingId);
+  viewTopTrackingId = null;
+  if (debug) console.log(`*** trackingLineIndex: ${trackingLineIndex}`);
+}
+</script>
+</body>
+</html>

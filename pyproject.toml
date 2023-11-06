@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "louisascenario"
+version = "0.1.0"
+description = ""
+authors = ["Inokashirashika, Louisa-charlotte Iosifivina <louisa.vrc@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fountain = {git = "ssh://git@github.com/Tagirijus/fountain.git", rev = "7da5447abae640f34448dd36fee83f47a7415fcf"}
+playscript = "^0.2.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
